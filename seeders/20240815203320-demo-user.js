@@ -13,11 +13,20 @@ module.exports = {
      * }], {});
     */
    const salt = bcrypt.genSaltSync(16)
-    await queryInterface.bulkInsert('Users', [{
-      email: 'admin@example.com',
-      password: bcrypt.hashSync('Admin#1234', salt),
-      role: 'ADMIN'
-    }], {});
+   const newUsers = []
+   for (let i = 5; i < 20; i++) {
+    newUsers.push({
+      email: `user${i}@example.com`,
+      password: bcrypt.hashSync('User#1234', salt),
+      role: 'USER'
+    })
+   }
+    // await queryInterface.bulkInsert('Users', [{
+    //   email: 'admin@example.com',
+    //   password: bcrypt.hashSync('Admin#1234', salt),
+    //   role: 'ADMIN'
+    // }], {});
+    // await queryInterface.bulkInsert('Users', newUsers, {});
   },
 
   async down(queryInterface, Sequelize) {

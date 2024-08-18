@@ -1,3 +1,4 @@
+const { Op } = require('sequelize')
 const { Profile, Education, Course, Experience } = require('../models')
 const moment = require('moment')
 
@@ -8,7 +9,9 @@ exports.getProfiles = async (req, res) => {
       if (req.query.filter === 'education') {
         data = await Profile.findAll({
           where: {
-            '$Education.level$': req.query.filter_value
+            '$Education.level$': {
+              [Op.like]: '%'+req.query.filter_value+'%'
+            }
           },
           include: [
             {
@@ -24,7 +27,9 @@ exports.getProfiles = async (req, res) => {
       } else {
         data = await Profile.findAll({
           where: {
-            [req.query.filter]: req.query.filter_value
+            [req.query.filter]: {
+              [Op.like]: '%'+req.query.filter_value+'%'
+            }
           },
           attributes: ['id', 'name', 'birthplace', 'birthdate', 'position']
         })
@@ -32,7 +37,9 @@ exports.getProfiles = async (req, res) => {
     } else if (!req.query.filter && req.query.filter_value) {
       data = await Profile.findAll({
         where: {
-          ['name']: req.query.filter_value
+          ['name']: {
+            [Op.like]: '%'+req.query.filter_value+'%'
+          }
         },
         attributes: ['id', 'name', 'birthplace', 'birthdate', 'position']
       })
