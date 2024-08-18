@@ -19,14 +19,14 @@ exports.getProfiles = async (req, res) => {
               }
             },
           ],
-          attributes: ['name', 'birthplace', 'birthdate', 'position']
+          attributes: ['id', 'name', 'birthplace', 'birthdate', 'position']
         })
       } else {
         data = await Profile.findAll({
           where: {
             [req.query.filter]: req.query.filter_value
           },
-          attributes: ['name', 'birthplace', 'birthdate', 'position']
+          attributes: ['id', 'name', 'birthplace', 'birthdate', 'position']
         })
       }
     } else if (!req.query.filter && req.query.filter_value) {
@@ -34,11 +34,11 @@ exports.getProfiles = async (req, res) => {
         where: {
           ['name']: req.query.filter_value
         },
-        attributes: ['name', 'birthplace', 'birthdate', 'position']
+        attributes: ['id', 'name', 'birthplace', 'birthdate', 'position']
       })
     } else {
       data = await Profile.findAll({
-        attributes: ['name', 'birthplace', 'birthdate', 'position']
+        attributes: ['id', 'name', 'birthplace', 'birthdate', 'position']
       })
     }
 
@@ -79,7 +79,55 @@ exports.getProfile = async (req, res) => {
         },
         {
           model: Experience,
-          as: 'profileExperience',
+          as: 'experience',
+          attributes: {
+            exclude: ['createdAt', 'updatedAt']
+          }
+        }
+      ]
+    })
+
+    res.status(200).send({
+      status: true,
+      data
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      status: false,
+      message: 'Server Error',
+    })
+  }
+}
+
+exports.getProfileUser = async (req, res) => {
+  try {
+    const { id } = req.params
+    const data = await Profile.findOne({
+      where: {
+        user_id: id
+      },
+      attributes: {
+        exclude: ['createdAt', 'updatedAt']
+      },
+      include: [
+        {
+          model: Education,
+          as: 'education',
+          attributes: {
+            exclude: ['createdAt', 'updatedAt']
+          }
+        },
+        {
+          model: Course,
+          as: 'course',
+          attributes: {
+            exclude: ['createdAt', 'updatedAt']
+          }
+        },
+        {
+          model: Experience,
+          as: 'experience',
           attributes: {
             exclude: ['createdAt', 'updatedAt']
           }
@@ -178,7 +226,8 @@ exports.addProfile = async (req, res) => {
 
 exports.editProfile = async (req, res) => {
   try {
-    const data = await Profile.update({
+    await Profile.update({
+      id: req.body.id,
       user_id: req.user.id,
       position: req.body.position,
       name: req.body.name,
@@ -205,35 +254,32 @@ exports.editProfile = async (req, res) => {
 
     const educations = req.body.education.map((v, k) => {
       return {
-        profile_id: data.id,
+        profile_id: req.body.id,
         ...v
       }
     })
 
     const courses = req.body.course.map((v, k) => {
       return {
-        profile_id: data.id,
+        profile_id: req.body.id,
         ...v
       }
     })
 
     const experiences = req.body.experience.map((v, k) => {
       return {
-        profile_id: data.id,
+        profile_id: req.body.id,
         ...v
       }
     })
 
-    const education = await Education.bulkCreate(educations, { updateOnDuplicate: ['id', 'level', 'institution', 'major', 'graduate', 'gpa'] })
-    const course = await Course.bulkCreate(courses, { updateOnDuplicate: ['id', 'course_name', 'certificate', 'year'] })
-    const experience = await Experience.bulkCreate(experiences, { updateOnDuplicate: ['id', 'company', 'position', 'salary', 'year'] })
+    await Education.bulkCreate(educations, { updateOnDuplicate: ['id'] })
+    await Course.bulkCreate(courses, { updateOnDuplicate: ['id'] })
+    await Experience.bulkCreate(experiences, { updateOnDuplicate: ['id'] })
 
     res.status(200).send({
       status: true,
-      data,
-      education,
-      course,
-      experience
+      data: req.body
     })
   } catch (error) {
     console.log(error);

@@ -13,6 +13,7 @@ const {
 
 const {
   getProfile,
+  getProfileUser,
   getProfiles,
   addProfile,
   editProfile,
@@ -23,8 +24,9 @@ router.post('/register', register)
 router.post('/login', login)
 router.get('/check-auth', auth, checkAuth)
 
-router.get('/profiles', auth, getProfiles)
-router.get('/profile/:id', auth, getProfile)
+router.get('/admin/profiles', auth, getProfiles)
+router.get('/admin/profile/:id', auth, getProfile)
+router.get('/profile/:id', auth, getProfileUser)
 router.post('/profile', auth, addProfile)
 router.put('/profile/:id', auth, editProfile)
 router.delete('/profile/:id', auth, deleteProfile)
